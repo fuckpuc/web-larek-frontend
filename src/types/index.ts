@@ -1,63 +1,49 @@
-export type PaymentType = 'cash' | 'card'
 
-
-export interface OrderInfo {
+//интерфейс карточки
+export interface ILotItem {
     id: string;
-    total: number;
-}
-
-export type BasketProduct = Pick<ProductItem, 'id' | 'title' | 'price'> & {
-    index?: number;
-}
-
-export type ApiResponse<Type> = {
-    totalCount: number,
-    items: Type[]
-};
-
-
-export const category: Record<string, string> =  {
-    "другое": "_other",
-    "дополнительное": "_additional",
-    "софт-скил": "_soft",
-    "хард-скил": "_hard",
-    "кнопка": "_button",
-}
- 
-export interface Bucket {
-   items:BasketProduct[];
-   order: Purchase;
-   total: number;
-}
-
-export interface ProductItem {
-    id: string;
+    title: string;
     description?: string;
     image: string;
-    title: string;
+    price: number;
     category: string;
-    price: number | null;
-    Button: boolean;
 }
 
-export interface OrderFormData {
+//данные хранениня карточки в корзине
+export type IBasketItem = Pick<ILotItem, 'id' | 'title' | 'price'> & {
+    isMyBid: boolean
+};
+
+// интерфейс состояния приложения
+export interface IAppState {
+    catalog: ILotItem[];
+    basket: string[];
+    preview: string | null;
+    order: IOrder | null;
+}
+
+//интерфейс где данные покупателя
+export interface IOrderForm {
     email: string;
     phone: string;
-    address: string;
-    payment: PaymentType;
-    total: number;
 }
 
-export interface Purchase extends OrderFormData { 
-    items: string[];
+//интерфейс о данных заказа
+export interface IOrder extends IOrderForm {
+    items: string[]
 }
 
-export type FormErrors = Partial<Record<keyof Purchase, string>>;
+//ошибка для всех формов
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
+//интерфейс для конечного результата
+export interface IOrderResult {
+    id: string;
+}
 
-export interface AppData {
-    catalog: ProductItem[];
-    basket: BasketProduct[];
-    preview: string | null;
-    order: Purchase | null;
+//интерфейс для запроса api приложения
+export interface ICardAPI {
+    getLotList: () => Promise<ILotItem[]>;
+    getLotItem: (id: string) => Promise<ILotItem>;
+    orderLots: (order: IOrder) => Promise<IOrderResult>;
 }

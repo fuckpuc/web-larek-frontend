@@ -41,214 +41,77 @@ npm run build
 yarn build
 ```
 
-## Описание
-В проекте используются следующие интерфейсы и типы данных:
+## Описание проекта
+### Интерфейсы и типы данных
 
 
-Товар в корзине:
-```
-export type BasketProduct = Pick<ProductItem, 'id' | 'title' | 'price'> & {
-    index?: number;
-}
-```
+#### ILotItem
 
-Товар
+Интерфейс `ILotItem` представляет собой данные о товаре в магазине. Каждый товар имеет уникальный идентификатор (`id`), название (`title`), описание (`description`), изображение (`image`), цену (`price`) и категорию (`category`).
 ```
-export interface ProductItem {
+export interface ILotItem {
     id: string;
+    title: string;
     description?: string;
     image: string;
-    title: string;
+    price: number;
     category: string;
-    price: number | null;
-    Button: boolean;
 }
 ```
 
-Это корзина:
+#### IBasketItem
+Тип `IBasketItem` представляет собой данные о товаре, хранимые в корзине покупок. Он включает только часть информации о товаре: идентификатор (`id`), название (`title`) и цену (`price`)
 ```
-export interface Bucket {
-   items: BasketProduct[];
-   order: Purchase;
-   total: number;
-}
-```
-
-
-Данные для проложения:
-```
-export interface AppData {
-    catalog: ProductItem[];
-    basket: BasketProduct[];
-    preview: string | null;
-    order: Purchase | null;
-}
-```
-
-Тип оплаты:
-```
-export type PaymentType = 'cash' | 'card';
-
-```
-
-Оформление заказа:
-```
-export interface OrderFormData {
-    email: string;
-    phone: string;
-    address: string;
-    payment: PaymentType;
-    total: number;
-}
-
-export interface Purchase extends OrderFormData { 
-    items: string[];
-}
-```
-
-Ответ от сервера с API:
-```
-export type ApiResponse<Type> = {
-    totalCount: number,
-    items: Type[]
+export type IBasketItem = Pick<ILotItem, 'id' | 'title' | 'price'> & {
+    isMyBid: boolean
 };
 ```
 
 
-Категории товаров:
+#### IAppState
+Интерфейс `IAppState` описывает состояние приложения. Включает в себя каталог товаров (`catalog`), содержимое корзины (`basket`), превью выбранного товара (`preview`) и информацию о заказе (`order`).
 ```
-export const category: Record<string, string> =  {
-    "другое": "_other",
-    "дополнительное": "_additional",
-    "софт-скил": "_soft",
-    "хард-скил": "_hard",
-    "кнопка": "_button",
+export interface IAppState {
+    catalog: ILotItem[];
+    basket: string[];
+    preview: string | null;
+    order: IOrder | null;
 }
 ```
 
-## Классы
-### Класс _WebLarekAPI_
-WebLarekAPI реализует интерфейс LarekApi.
+#### IOrderForm и IOrder
+Интерфейс `IOrderForm` определяет данные о покупателе, такие как электронная почта (`email`) и номер телефона (`phone`).
+`IOrder` расширяет `IOrderForm`, добавляя массив идентификаторов товаров (`items`), составляющих заказ.
 ```
-export interface LarekApi {
-    getLotList: () => Promise<ProductItem[]>;
-    getLotItem: (id: string) => Promise<ProductItem>;
-    orderLots: (order: Purchase) => Promise<OrderInfo>;
+export interface IOrderForm {
+    email: string;
+    phone: string;
+}
+
+export interface IOrder extends IOrderForm {
+    items: string[];
 }
 ```
 
-### Класс View ```<T>```
-View является абстрактным класом для представления страницы. Он содержит методы, общие для всех видов представлений.
-
-Данные класс выполняет такие действия как:
-
-1)  
+#### FormErrors
+Тип `FormErrors` представляет собой частичное соответствие между полями формы заказа и строками с сообщениями об ошибках.
 ```
-toggleClass(element: HTMLElement, className: string, force?: boolean) {
-		element.classList.toggle(className, force);
-	}
-```
-2)
-```
-	setDisabled(element: HTMLElement, state: boolean) {
-		if (element) {
-			if (state) element.setAttribute('disabled', 'disabled');
-			else element.removeAttribute('disabled');
-		}
-	}
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
 ```
 
-3)
+#### IOrderResult
+Интерфейс `IOrderResult` описывает результат заказа, включая уникальный идентификатор (`id`) полученного заказа.
 ```
-	render(data?: Partial<T>): HTMLElement {
-		Object.assign(this as object, data ?? {});
-		return this.container;
-	}
-```
-
-### Kласс _Popup_
-Представляет собой модальное окно с возможностью закрыть его через кнопку в правом верхнем углу и нажатием за пределелы модального окна.
-
-Принимает в себя конструктор
-```
-    constructor(container: HTMLElement, protected events: IEvents) {
-        super(container);
-
-        this._closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
-        this._content = ensureElement<HTMLElement>('.modal__content', container);
-
-        this._closeButton.addEventListener('click', this.close.bind(this));
-        this.container.addEventListener('click', this.close.bind(this));
-        this._content.addEventListener('click', (event) => event.stopPropagation());
-    }
-```
-Методы для открытия и закрытия попапа:
-
-1. close() - закрыть
-2. open() - открыть
-3. render(data: IModalData) - для рендеринга информации в модальном окне
-
-### Класс Contacts
-Наследут интерфейс _OrderFormData_
-
-Принимает в конструктор:
-
-1. container:- шаблон темплейта.
-2. events: IEvents - событие EventEmitter
-
-Имеет методы:
-
-1. set phone(value: string) - установка телефона в поле phone
-2. set email(value: string) - установка почты в поле email
-
-### Класс Success
-Наследуется от класса _Popup_, реализующий успешное сообщение с возможностью автоматического закрытия через определенное количество секунд.
-
-Реализует интерфейс success
-
-```
-interface success {
-	total: number;
+export interface IOrderResult {
+    id: string;
 }
 ```
-Принимает в себя конструктор
+#### ICardAPI
+Интерфейс `ICardAPI` представляет собой набор методов для взаимодействия с API приложения. Включает методы для получения списка товаров (`getLotList`), получения информации о конкретном товаре (`getLotItem`) и оформления заказа (`orderLots`).
 ```
-	constructor(value: number, container: HTMLElement, actions: SuccessAction) {
-		const { onClick } = actions || {};
-		super(container);
-		this._total = ensureElement<HTMLElement>(
-			'.order-success__description',
-			this.container
-		);
-		this._close = ensureElement<HTMLElement>(
-			'.order-success__close',
-			this.container
-		);
-
-		if (onClick) {
-			this._close.addEventListener('click', onClick);
-			this._total.textContent = `Списано ${value} синапсов`;
-		}
-	}
+export interface ICardAPI {
+    getLotList: () => Promise<ILotItem[]>;
+    getLotItem: (id: string) => Promise<ILotItem>;
+    orderLots: (order: IOrder) => Promise<IOrderResult>;
+}
 ```
-
-### Класс Form
-реализует интерфейс _ValidationData_
-
-Имеет методы:
-
-1. onInputChange(field: keyof T, value: string) - для отслеживания изменений в поле инпута.
-2. set valid(value: boolean) - блокировка кнопки submit формы.
-3. set errors(value: string) - для установки ошибок.
-4. render(state: Partial ```<T>``` & IFormState) - рендеринг ошибок.
-
-### Класс Order
-Реализует интерфейс _OrderFormData_
-
-Принимает в конструктор
-1) container - шаблон темплейта
-2) events - события EventEmitter
-
-Имеет медоты:
-1) setPayment(name: string) - Переключение и выбор методов оплаты
-2) address(value: string) - установка адресса
