@@ -1,6 +1,7 @@
-import { Api, ApiListResponse } from './base/api';
+import { Api} from './base/api';
 import {IOrder, IOrderResult, ILotItem} from "../types";
-import { ICardAPI } from '../types/index'
+import { ICardAPI } from '../types/index';
+import { ApiListResponse } from '../types';
 
 //базовый класс апи реализованный на основе тестового проекта
 export class CardAPI extends Api implements ICardAPI {

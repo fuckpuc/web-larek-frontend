@@ -3,16 +3,19 @@
 export interface ILotItem {
     id: string;
     title: string;
-    description?: string;
+    description?: string | string[];
     image: string;
-    price: number;
+    price: number | null;
     category: string;
 }
 
 //данные хранениня карточки в корзине
-export type IBasketItem = Pick<ILotItem, 'id' | 'title' | 'price'> & {
-    isMyBid: boolean
-};
+export interface IBasketItem {
+    id: string;
+    title: string;
+    price: number;
+    index?: number;
+}
 
 // интерфейс состояния приложения
 export interface IAppState {
@@ -24,12 +27,15 @@ export interface IAppState {
 
 //интерфейс где данные покупателя
 export interface IOrderForm {
+    payment: string;
+    address: string;
     email: string;
     phone: string;
 }
 
 //интерфейс о данных заказа
 export interface IOrder extends IOrderForm {
+    total: number;
     items: string[]
 }
 
@@ -39,6 +45,12 @@ export type FormErrors = Partial<Record<keyof IOrder, string>>;
 //интерфейс для конечного результата
 export interface IOrderResult {
     id: string;
+    total: number;
+}
+
+export type ApiListResponse<Type> = {
+    total: number,
+    items: Type[]
 }
 
 //интерфейс для запроса api приложения
