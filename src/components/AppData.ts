@@ -71,22 +71,37 @@ export class AppState extends Model<IAppState> {
 		return this.basket.some((basketItem) => basketItem === item);
 	}
 
+	clearFormData() {
+		this.order.items = [];
+		this.order.payment = '';
+		this.order.address = '';
+		this.order.email = '';
+		this.order.phone = '';
+		this.order.total = 0;
+	}
+
 	setPreview(item: LotItem) {
 		this.preview = item.id;
 		this.emitChanges('preview:changed', item);
 	}
 
-	confirmBasketItem(){
+	confirmBasketItem() {
 		this.basket.forEach((item) => {
 			if (!this.order.items.includes(item.id)) {
-			  this.order.items.push(item.id);
+				this.order.items.push(item.id);
 			}
-		  });
-    }
+		});
+	}
 
 	setOrderField(field: keyof IOrderForm, value: string) {
 		this.order[field] = value;
 
+		if (this.validateOrder()) {
+			this.events.emit('order:ready', this.order);
+		}
+	}
+
+	paymentField() {
 		if (this.validateOrder()) {
 			this.events.emit('order:ready', this.order);
 		}
